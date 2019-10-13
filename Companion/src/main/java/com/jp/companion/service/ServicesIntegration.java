@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +20,13 @@ public class ServicesIntegration {
 	
     @Autowired
 	RestTemplate restTemplate;
+    
+    
+    @Value("${ADserviceAppName}")
+    String adService;
+
+    @Value("${CommentServiceAppNAme}")
+	String commentService;
 
 
 	
@@ -26,7 +34,7 @@ public class ServicesIntegration {
     public List<Ad> getAdds() {
     	
 
-        String url = "http://adservice/ads";
+        String url = "http://"+adService+"/ads";
         
         ResponseEntity<List<Ad>> response = restTemplate.exchange(url,HttpMethod.GET,null,new ParameterizedTypeReference<List<Ad>>(){});
        
@@ -35,10 +43,18 @@ public class ServicesIntegration {
        return adds;
     }
 
-    @HystrixCommand(fallbackMethod = "defaultComments",commandProperties = {
+    public String getAdService() {
+		return adService;
+	}
+
+	public void setAdService(String adService) {
+		this.adService = adService;
+	}
+
+	@HystrixCommand(fallbackMethod = "defaultComments",commandProperties = {
             @HystrixProperty(name = "execution.isolation.thread.timeoutInMilliseconds", value = "2000") })
 	public void getComments(List<Ad> ads) {
-		 String baseUrl = "http://commentService/";
+		 String baseUrl = "http://"+commentService+"/";
 		 
 		for(Ad ad:ads) {
 	        
